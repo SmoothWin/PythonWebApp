@@ -19,7 +19,6 @@ class DBData:
 
 
     def select_query(self, table_name, params=None):
-        return_set = []
         cursor = self.con.cursor()
         try:
             print(table_name)
@@ -29,5 +28,9 @@ class DBData:
             print(e)
             self.close()
 
+    def bulk_insert_query(self, table_name, params=None):
+
+
     def close(self):
         self.con.close()
+

@@ -19,7 +19,7 @@ class DBData:
 
 
     def select_query(self, table_name, params=None):
-        cursor = self.con.cursor()
+        cursor = self.con.cursor(dictionary=True)
         try:
             print(table_name)
             cursor.execute('SELECT * FROM ' + table_name)
@@ -29,6 +29,17 @@ class DBData:
             self.close()
 
     def bulk_insert_query(self, table_name, params=None):
+        cursor = self.con.cursor(dictionary=True)
+        try:
+            data = params
+            query_params = ", ".join(params.keys())
+            records_list_template = ','.join(['%s'] * len(data))
+            insert_query = 'insert into {} ({}) values {}'.format(table_name,query_params,records_list_template)
+            print(insert_query)
+            # cursor.execute(insert_query, data)
+        except Error as e:
+            print(e)
+            self.close()
 
 
     def close(self):

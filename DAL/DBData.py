@@ -1,4 +1,4 @@
-
+import psycopg2.extras
 from psycopg2 import connect, Error
 from dotenv import load_dotenv
 import os
@@ -19,9 +19,9 @@ class DBData:
 
 
     def select_query(self, table_name, params=None):
-        cursor = self.con.cursor(dictionary=True)
+        cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
-            print(table_name)
+            # print(table_name)
             cursor.execute('SELECT * FROM ' + table_name)
             return cursor.fetchall()
         except Error as e:
@@ -29,14 +29,20 @@ class DBData:
             self.close()
 
     def bulk_insert_query(self, table_name, params=None):
-        cursor = self.con.cursor(dictionary=True)
+        cursor = self.con.cursor(cursor_factory=psycopg2.extras.DictCursor)
         try:
-            data = params
-            query_params = ", ".join(params.keys())
-            records_list_template = ','.join(['%s'] * len(data))
+            print(params)
+            query_params = ", ".join(params[0].keys())
+            records_list_template = ','.join(['%s'] * len(params))
             insert_query = 'insert into {} ({}) values {}'.format(table_name,query_params,records_list_template)
+            valuelist = []
+            for dict in params:
+                for k in dict.values():
+                    valuelist.append(k)
+                print("Here")
+            print(valuelist)
             print(insert_query)
-            # cursor.execute(insert_query, data)
+            cursor.execute(insert_query, valuelist)
         except Error as e:
             print(e)
             self.close()

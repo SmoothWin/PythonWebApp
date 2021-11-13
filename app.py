@@ -8,9 +8,10 @@ temperature = DBTemperature()
 @app.route('/')
 def hello_world():  # put application's code here
     all_temp = temperature.select_all_temperatures()
-    temperature.insert_all_temperatures({"date_time",})
+    print(all_temp)
+    temperature.insert_all_temperatures([{"date_time":datetime.now(), "temperature":20},{"date_time":datetime.now(), "temperature":20}])
     return jsonify(all_temp)
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

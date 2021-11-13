@@ -1,29 +1,33 @@
+
 from psycopg2 import connect, Error
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
 class DBData:
     def __init__(self):
         try:
-            self.con = connect(host=dotenv_values("../.env.DB_HOST"),
-                                        dbname=dotenv_values("../.env.DB_DATABASE"),
-                                        user=dotenv_values("../.env.DB_USER"),
-                                        port=dotenv_values("../.env.DB_PORT"),
-                                        password=dotenv_values("../.env.DB_PASSWORD"))
+            self.con = connect(host=os.environ.get("DB_HOST"),
+                                        dbname=os.environ.get("DB_DATABASE"),
+                                        user=os.environ.get("DB_USER"),
+                                        port=os.environ.get("DB_PORT"),
+                                        password=os.environ.get("DB_PASSWORD"))
         except Error as e:
             print(e)
-            self.con.close()
+            self.close()
+
 
     def select_query(self, table_name, params=None):
         return_set = []
         cursor = self.con.cursor()
         try:
-            query = 'SELECT * FROM (%s)'
-            cursor.execute(query=query, params=table_name)
+            print(table_name)
+            cursor.execute('SELECT * FROM ' + table_name)
             return cursor.fetchall()
         except Error as e:
             print(e)
-            self.con.close()
+            self.close()
 
-
+    def close(self):
+        self.con.close()

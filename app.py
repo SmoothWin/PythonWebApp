@@ -20,6 +20,8 @@ def hello_world():  # put application's code here
 @app.route('/api/send', methods = ['POST'])
 def send_data():
     content = request.json
+    if not("temperature" in content and "humidity" in content and "status" in content):
+        return app.response_class(response="Post request needs to contain humidity, temperature and status in order to work.", status=400)
     result = temperature.insert_all_temperatures(content["temperature"])
     print(result)
     return app.response_class(response=result, status=201, mimetype='application/json')

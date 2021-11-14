@@ -1,6 +1,7 @@
 from DAL.DBTemperature import DBTemperature
 from DAL.DBHumidity import DBHumidity
 from DAL.DBStatus import DBStatus
+from DAL.DBAll import DBAll
 from datetime import datetime
 from flask import Flask, jsonify, json, request
 
@@ -8,6 +9,7 @@ app = Flask(__name__)
 temperature = DBTemperature()
 humidity = DBHumidity()
 status = DBStatus()
+all_data = DBAll()
 
 @app.route('/')
 def hello_world():  # put application's code here
@@ -19,7 +21,7 @@ def hello_world():  # put application's code here
     print(all_stat)
 
     response = app.response_class(
-        response=json.dumps(all_temp),
+        response=json.dumps({"temperatures":all_temp, "humidities":all_hum, "status":all_stat}),
         status=200,
         mimetype='application/json'
     )

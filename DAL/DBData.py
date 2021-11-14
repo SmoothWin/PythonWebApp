@@ -19,6 +19,18 @@ class DBData:
             self.close()
 
 
+    def select_query_all(self):
+        cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            # print(table_name)
+            sql = 'select t.date_time, t.temperature, h.date_time, h.humidity, s.date_time, s.online from temperature t cross join humidity h cross join status s';
+            sql2 = 'SELECT * FROM temperature';
+            cursor.execute(sql)
+            return cursor.fetchall()
+        except Error as e:
+            print(e)
+            self.close()
+
     def select_query(self, table_name, params=None):
         cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:

@@ -2,8 +2,7 @@ from DAL.DBTemperature import DBTemperature
 from DAL.DBHumidity import DBHumidity
 from DAL.DBStatus import DBStatus
 from DAL.DBAll import DBAll
-from datetime import datetime
-from flask import Flask, jsonify, json, request
+from flask import Flask, json, request
 
 app = Flask(__name__)
 temperature = DBTemperature()
@@ -39,4 +38,4 @@ def send_data():
     return app.response_class(response=json.dumps(return_val), status=201, mimetype='application/json')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

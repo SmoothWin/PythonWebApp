@@ -1,5 +1,4 @@
 from DAL.DBData import DBData
-from Models.Temperature import Temperature
 
 
 class DBTemperature:

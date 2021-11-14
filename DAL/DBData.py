@@ -33,16 +33,19 @@ class DBData:
         try:
             print(params)
             query_params = ", ".join(params[0].keys())
+            print(params[0].keys())
             records_list_template = ','.join(['%s'] * len(params))
             insert_query = 'insert into {} ({}) values {}'.format(table_name,query_params,records_list_template)
-            valuelist = []
-            for dict in params:
-                for k in dict.values():
-                    valuelist.append(k)
-                print("Here")
-            print(valuelist)
             print(insert_query)
-            cursor.execute(insert_query, valuelist)
+            list = []
+            for i in params:
+                current_tuple = []
+                for key in params[0].keys():
+                    current_tuple.append(i[key])
+                list.append(tuple(current_tuple))
+            print(list)
+            cursor.execute(insert_query, list)
+            print(cursor.fetchall())
         except Error as e:
             print(e)
             self.close()

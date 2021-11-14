@@ -5,6 +5,7 @@ import os
 
 load_dotenv()
 
+
 class DBData:
     def __init__(self):
         try:
@@ -31,24 +32,22 @@ class DBData:
     def bulk_insert_query(self, table_name, params=None):
         cursor = self.con.cursor(cursor_factory=psycopg2.extras.DictCursor)
         try:
-            print(params)
             query_params = ", ".join(params[0].keys())
-            print(params[0].keys())
             records_list_template = ','.join(['%s'] * len(params))
             insert_query = 'insert into {} ({}) values {}'.format(table_name,query_params,records_list_template)
-            print(insert_query)
             list = []
             for i in params:
                 current_tuple = []
                 for key in params[0].keys():
                     current_tuple.append(i[key])
                 list.append(tuple(current_tuple))
-            print(list)
+            cursor.execute("set transaction read write;")
             cursor.execute(insert_query, list)
-            print(cursor.fetchall())
+            return "{} row of data inserted in {} table.".format(len(list), table_name);
         except Error as e:
             print(e)
             self.close()
+            return e
 
 
     def close(self):

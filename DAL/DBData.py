@@ -9,11 +9,12 @@ load_dotenv()
 class DBData:
     def __init__(self):
         try:
-            self.con = connect(host=os.environ.get("DB_HOST"),
-                                        dbname=os.environ.get("DB_DATABASE"),
-                                        user=os.environ.get("DB_USER"),
-                                        port=os.environ.get("DB_PORT"),
-                                        password=os.environ.get("DB_PASSWORD"))
+            # self.con = connect(host=os.environ.get("DB_HOST"),
+            #                             dbname=os.environ.get("DB_DATABASE"),
+            #                             user=os.environ.get("DB_USER"),
+            #                             port=os.environ.get("DB_PORT"),
+            #                             password=os.environ.get("DB_PASSWORD"))
+            self.con = connect(os.environ.get('DATABASE_URL'), sslmode='require')
         except Error as e:
             print(e)
             self.close()

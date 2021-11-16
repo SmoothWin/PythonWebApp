@@ -14,7 +14,7 @@ class DBData:
             #                             user=os.environ.get("DB_USER"),
             #                             port=os.environ.get("DB_PORT"),
             #                             password=os.environ.get("DB_PASSWORD"))
-            self.con = connect(os.environ.get('DATABASE_URL'), sslmode='require')
+            self.con = connect(os.environ.get('DATABASE_URL'))
         except Error as e:
             print(e)
             self.close()
@@ -27,6 +27,7 @@ class DBData:
             sql = 'select t.date_time, t.temperature, h.date_time, h.humidity, s.date_time, s.online from temperature t cross join humidity h cross join status s';
             sql2 = 'SELECT * FROM temperature';
             cursor.execute(sql)
+            cursor.commit()
             return cursor.fetchall()
         except Error as e:
             print(e)
@@ -54,8 +55,8 @@ class DBData:
                 for key in params[0].keys():
                     current_tuple.append(i[key])
                 list.append(tuple(current_tuple))
-            cursor.execute("set transaction read write;")
             cursor.execute(insert_query, list)
+            cursor.commit()
             return "{} row of data inserted in {} table.".format(len(list), table_name);
         except Error as e:
             print(e)

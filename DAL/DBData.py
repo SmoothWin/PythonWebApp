@@ -27,7 +27,7 @@ class DBData:
             sql = 'select t.date_time, t.temperature, h.date_time, h.humidity, s.date_time, s.online from temperature t cross join humidity h cross join status s';
             sql2 = 'SELECT * FROM temperature';
             cursor.execute(sql)
-            cursor.commit()
+            self.con.commit()
             return cursor.fetchall()
         except Error as e:
             print(e)
@@ -56,7 +56,7 @@ class DBData:
                     current_tuple.append(i[key])
                 list.append(tuple(current_tuple))
             cursor.execute(insert_query, list)
-            cursor.commit()
+            self.con.commit()
             return "{} row of data inserted in {} table.".format(len(list), table_name);
         except Error as e:
             print(e)

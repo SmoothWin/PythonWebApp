@@ -37,10 +37,12 @@ def hello_world():  # put application's code here
 def send_data():
     header_security = request.headers['security-check']
     content = request.json
-
-    if f.decrypt(bytes(header_security,'ascii')) != bytes(str(list(content.values())),'ascii'):
+    string = ""
+    for i in content.keys():
+        string += str(content[i])
+    print(string);
+    if f.decrypt(bytes(header_security,'ascii')) != bytes(string,'ascii'):
         return app.response_class(status=401)
-    print(content)
     if not("temperature" in content and "humidity" in content and "status" in content):
         return app.response_class(response="Post request needs to contain humidity, temperature and status in order to work.", status=400)
     result_temp = temperature.insert_all_temperatures(content["temperature"])

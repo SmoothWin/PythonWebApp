@@ -28,6 +28,7 @@ dicti = {
 
 
 load_dotenv()
+print(Fernet.generate_key())
 f = Fernet(os.environ.get('REQUEST_SECRET'))
 key = Fernet.generate_key()
 print(list(dicti.values()))

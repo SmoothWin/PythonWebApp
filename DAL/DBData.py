@@ -1,5 +1,6 @@
 import psycopg2.extras
-from psycopg2 import connect, Error
+from psycopg2 import connect, Error, errors
+from psycopg2._psycopg import IntegrityError
 from dotenv import load_dotenv
 import os
 
@@ -19,13 +20,37 @@ class DBData:
             print(e)
             self.close()
 
+    def select_user(self, name):
+        cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            sql = 'SELECT * FROM web_user WHERE name = %s'
+            cursor.execute(sql, [name])
+            return cursor.fetchone()
+        except Error as e:
+            print(e)
+            self.close()
+
+    def insert_user(self, uuid, name, password, admin):
+        cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            sql = "INSERT INTO web_user (uuid, name, password, admin) VALUES (%s,%s,%s,%s)"
+            cursor.execute(sql, [uuid, name, password, admin])
+            self.con.commit()
+            return "User {} has been registered".format(name)
+        except IntegrityError as e:
+            print(e)
+            return False
+        except Error as e:
+            print(e)
+            print(type(e))
+            self.close()
 
     def select_query_all(self):
         cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             # print(table_name)
-            sql = 'select t.date_time, t.temperature, h.date_time, h.humidity, s.date_time, s.online from temperature t cross join humidity h cross join status s';
-            sql2 = 'SELECT * FROM temperature';
+            sql = 'select t.date_time, t.temperature, h.date_time, h.humidity, s.date_time, s.online from temperature t cross join humidity h cross join status s'
+            sql2 = 'SELECT * FROM temperature'
             cursor.execute(sql)
             self.con.commit()
             return cursor.fetchall()

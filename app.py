@@ -80,7 +80,7 @@ def login_user():
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=30)},
-                           os.environ.get("JWT_SECRET"),algorithm='HS256')
+                           os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)
         response = make_response('Auth info correct', 201, {'login': 'successful'})
         response.set_cookie("auth", value=str(token), httponly=True, max_age=60*60*24*365*1)
@@ -94,13 +94,22 @@ def login_user():
 
 @app.route('/')
 def get_all_temp_data():  # put application's code here
-    if request.cookies.get("auth") is None:
+    token = request.cookies.get("auth")
+    if token is None:
         response = app.response_class(
             response={"Not allowed"},
             status=401,
             mimetype='application/json'
         )
         return response
+    values = jwt.decode(token, os.environ.get("JWT_SECRET"), algorithms='HS256')
+    if values['admin'] == False:
+        return app.response_class(
+            response={"Not allowed"},
+            status=401,
+            mimetype='application/json'
+        )
+    print(values)
     all_temp = temperature.select_all_temperatures()
     all_hum = humidity.select_all_humidities()
     all_stat = status.select_all_status()

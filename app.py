@@ -1,3 +1,5 @@
+import flask
+
 from DAL.DBTemperature import DBTemperature
 from DAL.DBHumidity import DBHumidity
 from DAL.DBStatus import DBStatus
@@ -16,6 +18,8 @@ import datetime
 from Models.User import User
 
 load_dotenv()
+frontend_site= os.environ.get("FRONTEND_SITE")
+
 f = Fernet(os.environ.get('REQUEST_SECRET'))
 
 app = Flask(__name__)
@@ -25,6 +29,24 @@ status = DBStatus()
 all_data = DBAll()
 
 users = DBUser()
+
+
+def redirect_path(path, code = 301, delete_cookie = False):
+    response = redirect("{}/{}".format(frontend_site, path), code)
+    if delete_cookie:
+        response.delete_cookie("auth")
+    return response
+
+
+def decode_token(token):
+    try:
+        values = jwt.decode(token, os.environ.get("JWT_SECRET"), algorithms='HS256')
+        return values
+    except jwt.ExpiredSignatureError:
+        return None
+
+    except Exception as e:
+        print(e)
 
 @app.route('/register', methods=['post'])
 def register_user():
@@ -53,15 +75,19 @@ def register_user():
 @app.route('/logout', methods=['post'])
 def logout_user():
     if request.cookies.get("auth"):
-        response = make_response("Logged out", 200)
-        response.delete_cookie("auth", httponly=True)
+        response = redirect_path("login", delete_cookie=True)
         return response
     return make_response("Already logged out", 400)
 
 @app.route('/login', methods=['post'])
 def login_user():
     if request.cookies.get("auth"):
-        return redirect("https://pythontemperaturetracker.herokuapp.com", 302)
+        values = decode_token(request.cookies.get("auth"))
+        if values is None:
+            redirect_path("login", 302, True)
+        if values['admin'] is True:
+            response = redirect_path("")
+        return response
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
         return app.response_class(
@@ -79,10 +105,13 @@ def login_user():
         )
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
-        token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=30)},
+        token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
+            seconds=10
+            # minutes=30
+        )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)
-        response = make_response('Auth info correct', 201, {'login': 'successful'})
+        response = redirect_path("", 302)
         response.set_cookie("auth", value=str(token), httponly=True, max_age=60*60*24*365*1)
         return response
 
@@ -96,19 +125,15 @@ def login_user():
 def get_all_temp_data():  # put application's code here
     token = request.cookies.get("auth")
     if token is None:
-        response = app.response_class(
-            response={"Not allowed"},
-            status=401,
-            mimetype='application/json'
-        )
+        response = redirect_path("login", 302)
         return response
-    values = jwt.decode(token, os.environ.get("JWT_SECRET"), algorithms='HS256')
-    if values['admin'] == False:
-        return app.response_class(
-            response={"Not allowed"},
-            status=401,
-            mimetype='application/json'
-        )
+    print(token)
+    values = decode_token(token)
+    if values is None:
+        return redirect_path("login", 302, True)
+    if values['admin'] is False:
+        response = redirect_path("login", 302, True)
+        return response
     print(values)
     all_temp = temperature.select_all_temperatures()
     all_hum = humidity.select_all_humidities()

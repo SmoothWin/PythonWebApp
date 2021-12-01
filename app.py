@@ -167,5 +167,9 @@ def send_data():
     return_val = {"temperature":result_temp, "humidity": result_humidity, "status":result_status}
     return app.response_class(response=json.dumps(return_val), status=201, mimetype='application/json')
 
+@app.route('/api/check', methods = ['GET'])
+def check():
+    return make_response("Server online", 200)
+
 if __name__ == '__main__':
     app.run()

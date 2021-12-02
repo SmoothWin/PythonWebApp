@@ -34,11 +34,11 @@ all_data = DBAll()
 users = DBUser()
 
 
-def redirect_path(path, code = 301, delete_cookie = False):
-    response = redirect("{}/{}".format(frontend_site, path), code)
+def response_create(message, code = 200, delete_cookie = False):
+    response_mod = make_response(message, code)
     if delete_cookie:
-        response.delete_cookie("auth")
-    return response
+        response_mod.delete_cookie("auth")
+    return response_mod
 
 
 def decode_token(token):
@@ -78,19 +78,22 @@ def register_user():
 @app.route('/logout', methods=['post'])
 def logout_user():
     if request.cookies.get("auth"):
-        response = redirect_path("login", delete_cookie=True)
+        response = response_create("Logged in", delete_cookie=True)
         return response
     return make_response("Already logged out", 400)
+
+
+
 
 @app.route('/login', methods=['post'])
 def login_user():
     if request.cookies.get("auth"):
         values = decode_token(request.cookies.get("auth"))
         if values is None:
-            redirect_path("login", 302, True)
+            response1 = response_create("invalid login", code=200, delete_cookie=True)
         if values['admin'] is True:
-            response = redirect_path()
-        return response
+            response1 = response_create("already authorized", 200)
+        return response1
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
         return app.response_class(
@@ -114,8 +117,8 @@ def login_user():
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)
-        response = redirect_path("", 302)
-        response.set_cookie("auth", value=str(token), httponly=True, max_age=60*60*24*365*1, secure=True)
+        response = response_create("authenticated", 200)
+        response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, domain=frontend_site, secure=True)
         return response
 
     return app.response_class(
@@ -129,14 +132,14 @@ def get_all_temp_data():  # put application's code here
     token = request.cookies.get("auth")
     print(token)
     if token is None:
-        response = redirect_path("login", 302)
+        response = response_create("missing values", 404)
         return response
     print(token)
     values = decode_token(token)
     if values is None:
-        return redirect_path("login", 302, True)
+        return response_create("Unauthorized", 401, True)
     if values['admin'] is False:
-        response = redirect_path("login", 302, True)
+        response = response_create("Unauthorized", 401, True)
         return response
     print(values)
     all_temp = temperature.select_all_temperatures()

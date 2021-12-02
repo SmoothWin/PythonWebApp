@@ -120,6 +120,9 @@ def login_user():
         response = response_create("authenticated", 200)
         response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, domain=os.environ.get('FRONT_DOMAIN'),
                             secure=True, samesite=None)
+        response.headers.add("Access-Control-Allow-Credentials", True)
+        response.headers.add("Access-Control-Allow-Headers", "Accept")
+
         return response
 
     return app.response_class(

@@ -8,6 +8,7 @@ from DAL.DBUser import DBUser
 from dotenv import load_dotenv
 import os
 from flask import Flask, json, request, make_response, redirect
+from flask_cors import CORS, cross_origin
 from cryptography.fernet import Fernet
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,6 +24,8 @@ frontend_site= os.environ.get("FRONTEND_SITE")
 f = Fernet(os.environ.get('REQUEST_SECRET'))
 
 app = Flask(__name__)
+CORS(app, resources={r"*": {"origins": ["http://localhost:3000","https://localhost:3000"]}}
+     ,support_credentials=True)
 temperature = DBTemperature()
 humidity = DBHumidity()
 status = DBStatus()
@@ -86,7 +89,7 @@ def login_user():
         if values is None:
             redirect_path("login", 302, True)
         if values['admin'] is True:
-            response = redirect_path("")
+            response = redirect_path()
         return response
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
@@ -112,7 +115,7 @@ def login_user():
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)
         response = redirect_path("", 302)
-        response.set_cookie("auth", value=str(token), httponly=True, max_age=60*60*24*365*1)
+        response.set_cookie("auth", value=str(token), httponly=True, max_age=60*60*24*365*1, secure=True)
         return response
 
     return app.response_class(
@@ -121,9 +124,10 @@ def login_user():
             mimetype='application/json',
         )
 
-@app.route('/')
+@app.route('/', methods=["GET"])
 def get_all_temp_data():  # put application's code here
     token = request.cookies.get("auth")
+    print(token)
     if token is None:
         response = redirect_path("login", 302)
         return response

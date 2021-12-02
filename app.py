@@ -8,6 +8,7 @@ from DAL.DBUser import DBUser
 from dotenv import load_dotenv
 import os
 from flask import Flask, json, request, make_response, redirect
+from flask_cors import CORS, cross_origin
 from cryptography.fernet import Fernet
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,6 +24,7 @@ frontend_site= os.environ.get("FRONTEND_SITE")
 f = Fernet(os.environ.get('REQUEST_SECRET'))
 
 app = Flask(__name__)
+CORS(app, resources={r"*": {"origins":["http://localhost:3000","https://localhost:3000"]}})
 temperature = DBTemperature()
 humidity = DBHumidity()
 status = DBStatus()

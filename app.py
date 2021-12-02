@@ -121,8 +121,7 @@ def login_user():
         response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, domain=os.environ.get('FRONT_DOMAIN'),
                             secure=True, samesite=None)
         response.headers.add("Access-Control-Allow-Credentials", "true")
-        response.headers.add("Access-Control-Allow-Headers",
-                             "Accept, Special-Request-Header, Content-Type, x-requested-with")
+        response.headers.add('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
         response.headers.add("Origin", frontend_site)
 
         return response

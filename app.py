@@ -119,8 +119,8 @@ def login_user():
     if check_password_hash(user['password'], auth.password):
         print("test2")
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
-            seconds=10
-            # minutes=30
+            # seconds=10
+            minutes=30
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)

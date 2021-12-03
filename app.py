@@ -88,6 +88,7 @@ def logout_user():
 @app.route('/login', methods=['post'])
 def login_user():
     print(request.cookies.get("auth"))
+    print("test1")
     if request.cookies.get("auth"):
         values = decode_token(request.cookies.get("auth"))
         print(values)
@@ -115,6 +116,7 @@ def login_user():
         )
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
+        print("test2")
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
             seconds=10
             # minutes=30

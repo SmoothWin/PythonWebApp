@@ -145,9 +145,9 @@ def get_all_temp_data():  # put application's code here
     print(token)
     values = decode_token(token)
     if values is None:
-        return response_create("Unauthorized", 401, True)
+        return response_create("Unauthorized", 401)
     if values['admin'] is False:
-        response = response_create("Unauthorized", 401, True)
+        response = response_create("Unauthorized", 401)
         return response
     print(values)
     all_temp = temperature.select_all_temperatures()

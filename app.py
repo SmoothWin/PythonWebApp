@@ -78,7 +78,7 @@ def register_user():
 @app.route('/logout', methods=['post'])
 def logout_user():
     if request.cookies.get("auth"):
-        response = response_create("Logged in", delete_cookie=True)
+        response = response_create("Logging out", delete_cookie=True)
         return response
     return make_response("Already logged out", 400)
 
@@ -93,7 +93,7 @@ def login_user():
         values = decode_token(request.cookies.get("auth"))
         print(values)
         if values is None:
-            response1 = response_create("invalid login (expired)", code=201)
+            response1 = response_create("invalid login (expired)", code=201, delete_cookie=True)
             return response1
         if values['admin'] is True:
 
@@ -145,9 +145,9 @@ def get_all_temp_data():  # put application's code here
     print(token)
     values = decode_token(token)
     if values is None:
-        return response_create("Unauthorized", 401)
+        return response_create("Unauthorized", 401, True)
     if values['admin'] is False:
-        response = response_create("Unauthorized", 401)
+        response = response_create("Account not authorized", 401)
         return response
     print(values)
     all_temp = temperature.select_all_temperatures()

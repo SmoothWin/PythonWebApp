@@ -145,7 +145,7 @@ def get_all_temp_data():  # put application's code here
     print(token)
     values = decode_token(token)
     if values is None:
-        return response_create("Unauthorized", 401)
+        return response_create("Unauthorized", 401, True)
     if values['admin'] is False:
         response = response_create("Unauthorized", 401)
         return response

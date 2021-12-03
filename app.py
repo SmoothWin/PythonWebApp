@@ -24,8 +24,8 @@ frontend_site= os.environ.get("FRONTEND_SITE")
 f = Fernet(os.environ.get('REQUEST_SECRET'))
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": [frontend_site]}}
-     , support_credentials=True)
+CORS(app, resources={r"*": {"origins": [frontend_site, "http://localhost:3000", "https://localhost:3000"]}}
+     , supports_credentials=True)
 temperature = DBTemperature()
 humidity = DBHumidity()
 status = DBStatus()
@@ -51,7 +51,6 @@ def decode_token(token):
     except Exception as e:
         print(e)
 
-
 @app.route('/register', methods=['post'])
 def register_user():
     data = request.get_json()
@@ -76,8 +75,6 @@ def register_user():
             status=201,
             mimetype='application/json'
         )
-
-
 @app.route('/logout', methods=['post'])
 def logout_user():
     if request.cookies.get("auth"):
@@ -90,22 +87,25 @@ def logout_user():
 
 @app.route('/login', methods=['post'])
 def login_user():
+    print(request.cookies.get("auth"))
     if request.cookies.get("auth"):
         values = decode_token(request.cookies.get("auth"))
+        print(values)
         if values is None:
-            response1 = response_create("invalid login", code=200, delete_cookie=True)
+            response1 = response_create("invalid login (expired)", code=201, delete_cookie=True)
+            return response1
         if values['admin'] is True:
+
             response1 = response_create("already authorized", 200)
         return response1
-    auth = request.json
-    print(auth)
-    if not auth or not auth['username'] or not auth['password']:
+    auth = request.authorization
+    if not auth or not auth.username or not auth.password:
         return app.response_class(
             response={"login required"},
             status=401,
             mimetype='application/json'
         )
-    user = users.select_user(auth['username'])
+    user = users.select_user(auth.username)
     # print(user)
     if user is None:
         return app.response_class(
@@ -114,15 +114,16 @@ def login_user():
             mimetype='application/json',
         )
     # print(user['password'])
-    if check_password_hash(user['password'], auth['password']):
-        token = jwt.encode({"public_id":user["uuid"], "admin": user["admin"], "exp":datetime.datetime.utcnow()+datetime.timedelta(
-            seconds=30
+    if check_password_hash(user['password'], auth.password):
+        token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
+            seconds=10
             # minutes=30
-        )},os.environ.get("JWT_SECRET"), algorithm="HS256")
+        )},
+                           os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)
         response = response_create("authenticated", 200)
-        # response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True,
-        #                     secure=True, samesite=None)
+        response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1,path="/", httponly=True,
+                            secure=True, samesite=None)
 
         return response
 

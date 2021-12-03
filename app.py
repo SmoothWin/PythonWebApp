@@ -24,7 +24,7 @@ frontend_site= os.environ.get("FRONTEND_SITE")
 f = Fernet(os.environ.get('REQUEST_SECRET'))
 
 app = Flask(__name__)
-CORS(app, resources={r"*": {"origins": [frontend_site, "http://localhost:3000", "https://localhost:3000"]}}
+CORS(app, resources={r"*": {"origins": [frontend_site,'https://python-frontend-obnagx4dh-smoothwin.vercel.app']}}
      , supports_credentials=True)
 temperature = DBTemperature()
 humidity = DBHumidity()

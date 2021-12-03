@@ -92,7 +92,7 @@ def login_user():
         values = decode_token(request.cookies.get("auth"))
         print(values)
         if values is None:
-            response1 = response_create("invalid login (expired)", code=201, delete_cookie=True)
+            response1 = response_create("invalid login (expired)", code=201)
             return response1
         if values['admin'] is True:
 

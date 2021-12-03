@@ -37,7 +37,7 @@ users = DBUser()
 def response_create(message, code = 200, delete_cookie = False):
     response_mod = make_response(message, code)
     if delete_cookie:
-        response_mod.set_cookie("auth", max_age=-(60*60*24*365*1))
+        response_mod.set_cookie("auth", max_age=0)
     return response_mod
 
 

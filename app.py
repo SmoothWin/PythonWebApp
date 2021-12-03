@@ -122,9 +122,8 @@ def login_user():
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         # print(token)
         response = response_create("authenticated", 200)
-        # response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True,
-        #                     secure=True, samesite=None)
-        response.headers.add("Set-Cookie", "auth={}; Max-Age={}; Secure; HttpOnly; SameSite=None; Path=/;".format(str(token), 60*60*24*365*1))
+        response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True,
+                            secure=True, samesite="None")
 
         return response
 

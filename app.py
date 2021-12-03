@@ -37,7 +37,7 @@ users = DBUser()
 def response_create(message, code = 200, delete_cookie = False):
     response_mod = make_response(message, code)
     if delete_cookie:
-        response_mod.delete_cookie("auth")
+        response_mod.set_cookie("auth", max_age=-(60*60*24*365*1))
     return response_mod
 
 
@@ -78,7 +78,7 @@ def register_user():
 @app.route('/logout', methods=['post'])
 def logout_user():
     if request.cookies.get("auth"):
-        response = response_create("Logging out", delete_cookie=True)
+        response = response_create("Logged in", delete_cookie=True)
         return response
     return make_response("Already logged out", 400)
 
@@ -147,7 +147,7 @@ def get_all_temp_data():  # put application's code here
     if values is None:
         return response_create("Unauthorized", 401, True)
     if values['admin'] is False:
-        response = response_create("Account not authorized", 401)
+        response = response_create("Unauthorized", 401)
         return response
     print(values)
     all_temp = temperature.select_all_temperatures()

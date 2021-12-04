@@ -115,8 +115,8 @@ def login_user():
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
-            seconds=10
-            # minutes=30
+            # seconds=10 #more for debugging
+            minutes=30
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         response = response_create({"message":"authenticated"}, 200)

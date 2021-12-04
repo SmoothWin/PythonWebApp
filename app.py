@@ -99,7 +99,6 @@ def login_user():
         return response1
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
-        print("bruh2")
         return app.response_class(
             response={"message":"login required"},
             status=401,
@@ -108,7 +107,6 @@ def login_user():
     user = users.select_user(auth.username)
     # print(user)
     if user is None:
-        print("bruh")
         return app.response_class(
             response={"message":"user doesn't exist"},
             status=401,
@@ -117,8 +115,8 @@ def login_user():
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
-            seconds=10 #more for debugging
-            # minutes=30
+            # seconds=10, #more for debugging
+            minutes=30,
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         response = response_create({"message":"authenticated"}, 200)
@@ -127,7 +125,6 @@ def login_user():
 
         return response
 
-    print("cheesy")
     return app.response_class(
             response={"wrong credentials"},
             status=401,

@@ -133,13 +133,6 @@ def login_user():
             status=401,
             mimetype='application/json',
         )
-@app.route('/login', methods=["GET"])
-def validate_login():
-    token = request.cookies.get("auth")
-    values = decode_token(token)
-    if values is None:
-        return response_create({"message": "devalidating..."}, code=200, delete_cookie=True)
-    return response_create({"message":"Not the time buddy"})
 
 
 @app.route('/', methods=["GET"])

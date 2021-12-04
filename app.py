@@ -81,7 +81,7 @@ def logout_user():
     if request.cookies.get("auth"):
         response = response_create({"message":"Logged in"}, delete_cookie=True)
         return response
-    return make_response({"message":"Already logged out"}, 400)
+    return response_create({"message":"Already logged out"}, 400)
 
 
 
@@ -115,8 +115,8 @@ def login_user():
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
-            # seconds=10
-            minutes=30
+            seconds=10
+            # minutes=30
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         response = response_create({"message":"authenticated"}, 200)
@@ -135,13 +135,14 @@ def login_user():
 def get_all_temp_data():  # put application's code here
     token = request.cookies.get("auth")
     if token is None:
-        response = response_create({"message":"missing values"}, 404)
+        response = response_create({"message":"missing values"}, 404, delete_cookie=True)
         return response
     values = decode_token(token)
     if values is None:
-        return response_create({"message":"Unauthorized"}, 401, True)
+
+        return response_create({"message":"Unauthorized"}, code=401, delete_cookie=True)
     if values['admin'] is False:
-        response = response_create({"message":"Unauthorized"}, 401)
+        response = response_create({"message":"Unauthorized"}, 401, True)
         return response
     all_temp = temperature.select_all_temperatures()
     all_hum = humidity.select_all_humidities()

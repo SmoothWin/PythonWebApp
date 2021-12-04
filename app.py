@@ -58,7 +58,7 @@ def register_user():
     print(data)
     if data is None:
         return app.response_class(
-            response={"registration empty"},
+            response={"message":"registration empty"},
             status=401,
             mimetype='application/json'
         )
@@ -67,43 +67,40 @@ def register_user():
     exists = users.insert_user(new_user.public_id,new_user.name, new_user.password, new_user.admin)
     if exists is False:
         return app.response_class(
-            response={"user already exists"},
+            response={"message":"user already exists"},
             status=401,
             mimetype='application/json'
         )
     return app.response_class(
-            response={"registered successfully"},
+            response={"message":"registered successfully"},
             status=201,
             mimetype='application/json'
         )
 @app.route('/logout', methods=['post'])
 def logout_user():
     if request.cookies.get("auth"):
-        response = response_create("Logged in", delete_cookie=True)
+        response = response_create({"message":"Logged in"}, delete_cookie=True)
         return response
-    return make_response("Already logged out", 400)
+    return response_create({"message":"Already logged out"}, 400)
 
 
 
 
 @app.route('/login', methods=['post'])
 def login_user():
-    print(request.cookies.get("auth"))
-    print("test1")
     if request.cookies.get("auth"):
         values = decode_token(request.cookies.get("auth"))
-        print(values)
         if values is None:
-            response1 = response_create("invalid login (expired)", code=201, delete_cookie=True)
+            response1 = response_create({"message":"invalid login (expired)"}, code=201, delete_cookie=True)
             return response1
         if values['admin'] is True:
 
-            response1 = response_create("already authorized", 200)
+            response1 = response_create({"message":"already authorized"}, 200)
         return response1
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
         return app.response_class(
-            response={"login required"},
+            response={"message":"login required"},
             status=401,
             mimetype='application/json'
         )
@@ -111,20 +108,18 @@ def login_user():
     # print(user)
     if user is None:
         return app.response_class(
-            response={"user doesn't exist"},
+            response={"message":"user doesn't exist"},
             status=401,
             mimetype='application/json',
         )
     # print(user['password'])
     if check_password_hash(user['password'], auth.password):
-        print("test2")
         token = jwt.encode({'public_id':user['uuid'], 'admin': user['admin'], 'exp':datetime.datetime.utcnow()+datetime.timedelta(
-            # seconds=10
+            # seconds=10 #more for debugging
             minutes=30
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
-        # print(token)
-        response = response_create("authenticated", 200)
+        response = response_create({"message":"authenticated"}, 200)
         response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True,
                             secure=True, samesite="None")
 
@@ -139,24 +134,19 @@ def login_user():
 @app.route('/', methods=["GET"])
 def get_all_temp_data():  # put application's code here
     token = request.cookies.get("auth")
-    print(token)
     if token is None:
-        response = response_create("missing values", 404)
+        response = response_create({"message":"missing values"}, 404, delete_cookie=True)
         return response
-    print(token)
     values = decode_token(token)
     if values is None:
-        return response_create("Unauthorized", 401, True)
+
+        return response_create({"message":"Unauthorized"}, code=401, delete_cookie=True)
     if values['admin'] is False:
-        response = response_create("Unauthorized", 401)
+        response = response_create({"message":"Unauthorized"}, 401, True)
         return response
-    print(values)
     all_temp = temperature.select_all_temperatures()
     all_hum = humidity.select_all_humidities()
     all_stat = status.select_all_status()
-    print(all_temp)
-    print(all_hum)
-    print(all_stat)
 
     response = app.response_class(
         response=json.dumps({"temperatures":all_temp, "humidities":all_hum, "status":all_stat}),
@@ -172,7 +162,6 @@ def send_data():
     string = ""
     for i in content.keys():
         string += str(content[i])
-    print(string);
     if f.decrypt(bytes(header_security,'ascii')) != bytes(string,'ascii'):
         return app.response_class(status=401)
     if not("temperature" in content and "humidity" in content and "status" in content):
@@ -185,7 +174,7 @@ def send_data():
 
 @app.route('/api/check', methods = ['GET'])
 def check():
-    return make_response("Server online", 200)
+    return make_response({"message":"Server online"}, 200)
 
 if __name__ == '__main__':
     app.run()

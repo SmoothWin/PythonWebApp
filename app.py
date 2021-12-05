@@ -133,7 +133,7 @@ def login_user():
 
 
 @app.route('/', methods=["GET"])
-def get_all_temp_data():  # put application's code here
+def get_all_data():  # put application's code here
     token = request.cookies.get("auth")
     if token is None:
         response = response_create({"message":"missing values"}, 404, delete_cookie=True)
@@ -179,7 +179,7 @@ def get_all_temp_data():  # put application's code here
     return response
 
 @app.route('/humitidy', methods=["GET"])
-def get_all_temp_data():  # put application's code here
+def get_all_hum_data():  # put application's code here
     token = request.cookies.get("auth")
     if token is None:
         response = response_create({"message":"missing values"}, 404, delete_cookie=True)
@@ -201,7 +201,7 @@ def get_all_temp_data():  # put application's code here
     return response
 
 @app.route('/status', methods=["GET"])
-def get_all_temp_data():  # put application's code here
+def get_all_stat_data():  # put application's code here
     token = request.cookies.get("auth")
     if token is None:
         response = response_create({"message":"missing values"}, 404, delete_cookie=True)

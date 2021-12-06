@@ -194,7 +194,7 @@ def get_all_hum_data():  # put application's code here
     all_hum = humidity.select_all_humidities()
 
     response = app.response_class(
-        response=json.dumps({"humidities":all_hum}),
+        response=json.dumps({"temperatures":all_hum}),
         status=200,
         mimetype='application/json'
     )

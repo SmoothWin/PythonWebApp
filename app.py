@@ -120,7 +120,7 @@ def login_user():
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         response = response_create({"message":"authenticated"}, 200)
         response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True
-                            ,samesite="None")
+                            ,samesite="None", secure=True)
 
         return response
 

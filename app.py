@@ -14,7 +14,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import jwt
 import datetime
-import logging
 
 from Models.User import User
 
@@ -121,7 +120,7 @@ def login_user():
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         response = response_create({"message":"authenticated"}, 200)
         response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True
-                            ,samesite="None", secure=True)
+                            ,samesite="None")
 
         return response
 

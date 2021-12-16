@@ -1,10 +1,9 @@
-import flask
-
 from DAL.DBTemperature import DBTemperature
 from DAL.DBHumidity import DBHumidity
 from DAL.DBStatus import DBStatus
-from DAL.DBAll import DBAll
 from DAL.DBUser import DBUser
+from DAL.DBPis import DBPis
+
 from dotenv import load_dotenv
 import os
 from flask import Flask, json, request, make_response, redirect
@@ -15,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import jwt
 import datetime
+import logging
 
 from Models.User import User
 
@@ -29,7 +29,7 @@ CORS(app, resources={r"*": {"origins": [frontend_site,'https://python-frontend-o
 temperature = DBTemperature()
 humidity = DBHumidity()
 status = DBStatus()
-all_data = DBAll()
+pis = DBPis()
 
 users = DBUser()
 
@@ -120,8 +120,8 @@ def login_user():
         )},
                            os.environ.get("JWT_SECRET"), algorithm='HS256')
         response = response_create({"message":"authenticated"}, 200)
-        response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True,
-                            secure=True, samesite="None")
+        response.set_cookie("auth", value=str(token), max_age=60*60*24*365*1, path="/", httponly=True
+                            ,samesite="None", secure=True)
 
         return response
 
@@ -130,10 +130,26 @@ def login_user():
             status=401,
             mimetype='application/json',
         )
+@app.route('/api/pies', methods=["GET"])
+def get_all_pis():
+    token = request.cookies.get("auth")
+    if token is None:
+        response = response_create({"message": "missing values"}, 404, delete_cookie=True)
+        return response
+    values = decode_token(token)
+    if values is None:
+        return response_create({"message": "Unauthorized"}, code=401, delete_cookie=True)
+    if values['admin'] is False:
+        response = response_create({"message": "Unauthorized"}, 401, True)
+        return response
+
+    all_pi = pis.select_all_pis()
+    return make_response(json.dumps({"pies": all_pi}), 200)
 
 
 @app.route('/', methods=["GET"])
 def get_all_data():  # put application's code here
+
     token = request.cookies.get("auth")
     if token is None:
         response = response_create({"message":"missing values"}, 404, delete_cookie=True)
@@ -145,16 +161,21 @@ def get_all_data():  # put application's code here
     if values['admin'] is False:
         response = response_create({"message":"Unauthorized"}, 401, True)
         return response
-    all_temp = temperature.select_all_temperatures()
-    all_hum = humidity.select_all_humidities()
-    all_stat = status.select_all_status()
 
-    response = app.response_class(
-        response=json.dumps({"temperatures":all_temp, "humidities":all_hum, "status":all_stat}),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
+    if request.args.get("pi"):
+        all_temp = temperature.select_all_temperatures(request.args.get("pi"))
+        all_hum = humidity.select_all_humidities(request.args.get("pi"))
+        all_stat = status.select_all_status(request.args.get("pi"))
+
+        response = app.response_class(
+            response=json.dumps({"temperatures": all_temp, "humidities": all_hum, "status": all_stat}),
+            status=200,
+            mimetype='application/json'
+        )
+        return response
+    return response_create({"message": "No pies specified"}, code=400)
+
+
 
 @app.route('/temperature', methods=["GET"])
 def get_all_temp_data():  # put application's code here

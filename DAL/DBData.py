@@ -30,6 +30,7 @@ class DBData:
             print(e)
             self.close()
 
+
     def insert_user(self, uuid, name, password, admin):
         cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
@@ -45,24 +46,21 @@ class DBData:
             print(type(e))
             self.close()
 
-    def select_query_all(self):
+    def select_all_pi(self):
         cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             # print(table_name)
-            sql = 'select t.date_time, t.temperature, h.date_time, h.humidity, s.date_time, s.online from temperature t cross join humidity h cross join status s'
-            sql2 = 'SELECT * FROM temperature'
-            cursor.execute(sql)
-            self.con.commit()
+            cursor.execute('SELECT distinct(pi_id) FROM humidity')
             return cursor.fetchall()
         except Error as e:
             print(e)
             self.close()
 
-    def select_query(self, table_name, params=None):
+    def select_query(self, table_name, pi_id, params=None):
         cursor = self.con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             # print(table_name)
-            cursor.execute('SELECT * FROM ' + table_name)
+            cursor.execute('SELECT * FROM ' + table_name+' WHERE pi_id = %s', [pi_id])
             return cursor.fetchall()
         except Error as e:
             print(e)

@@ -175,74 +175,6 @@ def get_all_data():  # put application's code here
     return response_create({"message": "No pies specified"}, code=400)
 
 
-
-@app.route('/temperature', methods=["GET"])
-def get_all_temp_data():  # put application's code here
-    token = request.cookies.get("auth")
-    if token is None:
-        response = response_create({"message":"missing values"}, 404, delete_cookie=True)
-        return response
-    values = decode_token(token)
-    if values is None:
-
-        return response_create({"message":"Unauthorized"}, code=401, delete_cookie=True)
-    if values['admin'] is False:
-        response = response_create({"message":"Unauthorized"}, 401, True)
-        return response
-    all_temp = temperature.select_all_temperatures()
-
-    response = app.response_class(
-        response=json.dumps({"temperatures":all_temp}),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
-
-@app.route('/humitidy', methods=["GET"])
-def get_all_hum_data():  # put application's code here
-    token = request.cookies.get("auth")
-    if token is None:
-        response = response_create({"message":"missing values"}, 404, delete_cookie=True)
-        return response
-    values = decode_token(token)
-    if values is None:
-
-        return response_create({"message":"Unauthorized"}, code=401, delete_cookie=True)
-    if values['admin'] is False:
-        response = response_create({"message":"Unauthorized"}, 401, True)
-        return response
-    all_hum = humidity.select_all_humidities()
-
-    response = app.response_class(
-        response=json.dumps({"temperatures":all_hum}),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
-
-@app.route('/status', methods=["GET"])
-def get_all_stat_data():  # put application's code here
-    token = request.cookies.get("auth")
-    if token is None:
-        response = response_create({"message":"missing values"}, 404, delete_cookie=True)
-        return response
-    values = decode_token(token)
-    if values is None:
-
-        return response_create({"message":"Unauthorized"}, code=401, delete_cookie=True)
-    if values['admin'] is False:
-        response = response_create({"message":"Unauthorized"}, 401, True)
-        return response
-
-    all_stat = status.select_all_status()
-
-    response = app.response_class(
-        response=json.dumps({"status":all_stat}),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
-
 @app.route('/api/send', methods = ['POST'])
 def send_data():
     header_security = request.headers['security-check']
@@ -260,9 +192,11 @@ def send_data():
     return_val = {"temperature":result_temp, "humidity": result_humidity, "status":result_status}
     return app.response_class(response=json.dumps(return_val), status=201, mimetype='application/json')
 
+
 @app.route('/api/check', methods = ['GET'])
 def check():
     return make_response({"message":"Server online"}, 200)
+
 
 if __name__ == '__main__':
     app.run()
